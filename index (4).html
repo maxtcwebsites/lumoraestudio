@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lumora Estudio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --cream:      #fdf8ed;
+      --cream2:     #f6eedb;
+      --gold:       #c9a96e;
+      --gold-light: #e8d5a8;
+      --gold-pale:  #f2e8cc;
+      --brown:      #7a5c3a;
+      --brown-dark: #3e2b18;
+      --brown-mid:  #9e7248;
+      --text:       #3a2e1e;
+      --text-soft:  #7a6a52;
+      --white:      #fffef9;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--cream);
+      color: var(--text);
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      cursor: none;
+      overflow-x: hidden;
+    }
+
+    /* ── CURSOR ── */
+    .cursor {
+      position: fixed; width: 10px; height: 10px;
+      background: var(--brown-dark); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: opacity 0.2s;
+    }
+    .cursor-ring {
+      position: fixed; width: 38px; height: 38px;
+      border: 1.5px solid var(--gold); border-radius: 50%;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%,-50%);
+      transition: width 0.3s, height 0.3s, border-color 0.3s;
+    }
+    body:has(a:hover) .cursor-ring,
+    body:has(button:hover) .cursor-ring,
+    body:has(.frame-btn:hover) .cursor-ring {
+      width: 60px; height: 60px; border-color: var(--brown);
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.5rem 5rem;
+      background: linear-gradient(to bottom, rgba(253,248,237,0.96) 0%, rgba(253,248,237,0) 100%);
+      transition: background 0.5s, box-shadow 0.5s;
+    }
+    nav.scrolled {
+      background: rgba(253,248,237,0.97);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 1px 0 rgba(201,169,110,0.2);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.45rem; font-weight: 300;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--brown-dark); text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 2.8rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.72rem; font-weight: 400;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--brown); text-decoration: none;
+      position: relative; transition: color 0.3s;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; right: 100%;
+      height: 1px; background: var(--gold);
+      transition: right 0.45s cubic-bezier(.23,1,.32,1);
+    }
+    .nav-links a:hover::after { right: 0; }
+    .nav-links a:hover { color: var(--brown-dark); }
+
+    /* ── PAGES ── */
+    .page { display: none; min-height: 100vh; }
+    .page.active { display: block; }
+
+    /* ── WATER CANVAS ── */
+    #water-canvas {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+
+    /* ── GRAIN ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 1; opacity: 0.55;
+    }
+    nav, .page, footer { position: relative; z-index: 2; }
+
+    /* ═══════════════════════════════
+       HOME
+    ═══════════════════════════════ */
+    #home { padding-top: 0; }
+
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 55% 45%;
+      align-items: center;
+      padding: 0 5rem 0 5rem;
+      gap: 3rem;
+    }
+
+    .hero-left {
+      padding-top: 5rem;
+      padding-bottom: 2rem;
+    }
+
+    /* The quote block — wraps everything */
+    .quote-block {
+      position: relative;
+      padding: 2rem 0 2rem 0;
+    }
+
+    .quote-open {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(6rem, 9vw, 11rem);
+      line-height: 0.55;
+      color: var(--gold);
+      display: block;
+      opacity: 0.75;
+      margin-bottom: 0.2rem;
+      user-select: none;
+    }
+
+    .hero-tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3.8rem, 6.5vw, 6.2rem);
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.12;
+      color: var(--brown-dark);
+      display: block;
+      padding: 0 1.5rem;
+    }
+
+    .quote-close-row {
+      display: flex;
+      justify-content: flex-end;
+      padding-right: 0.5rem;
+      margin-top: 0.2rem;
+    }
+
+    .quote-close {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(6rem, 9vw, 11rem);
+      line-height: 0.55;
+      color: var(--gold);
+      opacity: 0.75;
+      display: block;
+      user-select: none;
+    }
+
+    .hero-divider {
+      width: 52px; height: 1px;
+      background: var(--gold);
+      margin: 2.5rem 0 1.5rem 1.5rem;
+    }
+
+    .hero-sub {
+      font-size: 0.75rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--brown-mid);
+      padding-left: 1.5rem;
+    }
+
+    /* hero image */
+    .hero-right {
+      height: 88vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .hero-img-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 490px;
+      height: 78vh;
+      max-height: 720px;
+      will-change: transform;
+      transition: transform 0.1s linear;
+    }
+
+    /* decorative offset border */
+    .hero-img-wrap::before {
+      content: '';
+      position: absolute;
+      top: -14px; right: -14px; bottom: 14px; left: 14px;
+      border: 1px solid var(--gold-light);
+      z-index: -1;
+      transition: transform 0.1s linear;
+    }
+    /* subtle inner vignette line */
+    .hero-img-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 14px;
+      border: 1px solid rgba(201,169,110,0.2);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .hero-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center top;
+      display: block;
+      filter: sepia(6%) brightness(1.02);
+    }
+
+    /* scroll hint */
+    .scroll-hint {
+      position: absolute; bottom: 2.5rem; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      opacity: 0.45; animation: bob 2.2s ease-in-out infinite;
+    }
+    .scroll-hint span {
+      font-size: 0.6rem; letter-spacing: 0.35em;
+      text-transform: uppercase; color: var(--brown);
+    }
+    .scroll-line { width: 1px; height: 48px; background: linear-gradient(to bottom, var(--brown), transparent); }
+    @keyframes bob {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50%      { transform: translateX(-50%) translateY(9px); }
+    }
+
+    /* ── FRAME BUTTONS ── */
+    .frames-section {
+      padding: 7rem 5rem 8rem;
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 1.8rem;
+    }
+
+    .frame-btn {
+      position: relative; overflow: hidden; cursor: none;
+      aspect-ratio: 3/4; max-height: 540px;
+      background: var(--brown-dark);
+    }
+
+    .frame-btn img {
+      width: 100%; height: 100%; object-fit: cover; object-position: center;
+      display: block;
+      transition: transform 0.9s cubic-bezier(.23,1,.32,1), filter 0.6s;
+      filter: brightness(0.65) sepia(18%);
+    }
+    .frame-btn:hover img { transform: scale(1.07); filter: brightness(0.5) sepia(28%); }
+
+    .frame-label {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.9rem;
+    }
+    .frame-label::before {
+      content: '';
+      position: absolute; inset: 18px;
+      border: 1px solid rgba(201,169,110,0.45);
+      transition: inset 0.55s cubic-bezier(.23,1,.32,1), border-color 0.4s;
+      pointer-events: none;
+    }
+    .frame-btn:hover .frame-label::before { inset: 26px; border-color: rgba(201,169,110,0.9); }
+
+    .frame-label span {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.5rem, 2.4vw, 2.3rem); font-weight: 300;
+      letter-spacing: 0.18em; color: var(--white);
+      text-transform: uppercase; position: relative;
+    }
+    .frame-label .frame-sub {
+      font-size: 0.64rem; letter-spacing: 0.38em; text-transform: uppercase;
+      color: var(--gold-light); font-family: 'Jost', sans-serif;
+      font-weight: 300; position: relative;
+    }
+
+    /* ═══════════════════════════════
+       ABOUT
+    ═══════════════════════════════ */
+    #about { padding: 7rem 0 5rem; }
+
+    .about-hero {
+      display: grid; grid-template-columns: 1fr 1fr;
+      min-height: 82vh; align-items: stretch;
+    }
+
+    .about-img-col { position: relative; overflow: hidden; }
+    .about-img-col img {
+      width: 100%; height: 100%; object-fit: cover; object-position: center top;
+      filter: sepia(8%) brightness(1.02);
+      transition: transform 0.12s linear;
+    }
+    .about-img-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to right, rgba(253,248,237,0) 65%, var(--cream) 100%);
+    }
+
+    .about-text-col {
+      padding: 5rem 5.5rem 5rem 3.5rem;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+
+    .about-eyebrow {
+      font-size: 0.68rem; letter-spacing: 0.45em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 1.2rem;
+    }
+    .about-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 2.8vw, 2.8rem); font-weight: 300;
+      color: var(--brown-dark); line-height: 1.15; margin-bottom: 0.4rem;
+    }
+    .about-name-link {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.3rem, 1.8vw, 1.8rem); font-weight: 400; font-style: italic;
+      color: var(--brown-mid); text-decoration: none;
+      display: inline-block; margin-bottom: 2rem;
+      position: relative; transition: color 0.3s;
+    }
+    .about-name-link::after { content: ' ↗'; font-size: 0.85em; opacity: 0.55; }
+    .about-name-link:hover { color: var(--gold); }
+
+    .about-divider { width: 44px; height: 1px; background: var(--gold); margin-bottom: 1.8rem; }
+
+    .about-bio {
+      font-size: 0.93rem; line-height: 1.95;
+      color: var(--text-soft); margin-bottom: 2.2rem; max-width: 460px;
+    }
+
+    .services-grid { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-bottom: 2.4rem; }
+    .service-tag {
+      padding: 0.38rem 1rem;
+      border: 1px solid var(--gold-light);
+      font-size: 0.68rem; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--brown);
+      background: rgba(201,169,110,0.07);
+      transition: background 0.3s, color 0.3s;
+    }
+    .service-tag:hover { background: rgba(201,169,110,0.18); color: var(--brown-dark); }
+
+    .ig-link {
+      display: inline-flex; align-items: center; gap: 0.75rem;
+      font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--brown); text-decoration: none;
+      border-bottom: 1px solid var(--gold-light);
+      padding-bottom: 0.35rem; transition: color 0.3s, border-color 0.3s;
+    }
+    .ig-link:hover { color: var(--gold); border-color: var(--gold); }
+    .ig-link svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
+
+    /* ═══════════════════════════════
+       SHOWCASE
+    ═══════════════════════════════ */
+    #showcase { padding: 8rem 5rem 6rem; }
+
+    .showcase-header { text-align: center; margin-bottom: 5rem; }
+    .showcase-header h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.8rem, 5.5vw, 5rem); font-weight: 300; font-style: italic;
+      color: var(--brown-dark);
+    }
+    .showcase-header p {
+      font-size: 0.72rem; letter-spacing: 0.38em;
+      text-transform: uppercase; color: var(--gold); margin-top: 0.9rem;
+    }
+
+    .showcase-grid { columns: 3; column-gap: 1.4rem; }
+
+    .showcase-item {
+      break-inside: avoid; margin-bottom: 1.4rem;
+      position: relative; overflow: hidden; cursor: none;
+      will-change: transform; transition: transform 0.1s linear;
+    }
+    .showcase-item img {
+      width: 100%; height: auto; min-height: 160px; max-height: 580px;
+      object-fit: cover; display: block;
+      transition: transform 0.9s cubic-bezier(.23,1,.32,1), filter 0.6s;
+      filter: sepia(4%) brightness(1.01);
+    }
+    .showcase-item:hover img { transform: scale(1.04); filter: sepia(10%) brightness(1.03); }
+    .showcase-item-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(62,43,24,0.45) 0%, transparent 55%);
+      opacity: 0; transition: opacity 0.5s;
+    }
+    .showcase-item:hover .showcase-item-overlay { opacity: 1; }
+
+    /* ═══════════════════════════════
+       CONTACT
+    ═══════════════════════════════ */
+    #contact { padding: 8rem 5rem 6rem; min-height: 100vh; display: flex; align-items: center; }
+
+    .contact-inner {
+      max-width: 1140px; margin: 0 auto; width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 7rem; align-items: center;
+    }
+
+    .contact-left h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.6rem, 4.2vw, 4.2rem); font-weight: 300; font-style: italic;
+      color: var(--brown-dark); line-height: 1.15; margin-bottom: 1.5rem;
+    }
+    .contact-decor { width: 48px; height: 1px; background: var(--gold); margin-bottom: 1.8rem; }
+    .contact-left p { font-size: 0.9rem; line-height: 1.95; color: var(--text-soft); margin-bottom: 2.5rem; }
+
+    .contact-social { display: flex; flex-direction: column; gap: 1rem; }
+
+    /* FORM */
+    .contact-form { display: flex; flex-direction: column; gap: 1.6rem; }
+
+    .form-field { position: relative; }
+    .form-field input,
+    .form-field textarea {
+      width: 100%;
+      background: rgba(201,169,110,0.05);
+      border: none; border-bottom: 1px solid var(--gold-light);
+      padding: 1.1rem 0;
+      font-family: 'Jost', sans-serif; font-size: 0.9rem; font-weight: 300;
+      color: var(--text); outline: none; resize: none;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .form-field input:focus, .form-field textarea:focus {
+      border-bottom-color: var(--brown);
+      background: rgba(201,169,110,0.09);
+    }
+    .form-field label {
+      position: absolute; top: 1.1rem; left: 0;
+      font-size: 0.72rem; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--text-soft);
+      pointer-events: none; transition: all 0.3s;
+    }
+    .form-field input:focus ~ label,
+    .form-field input:not(:placeholder-shown) ~ label,
+    .form-field textarea:focus ~ label,
+    .form-field textarea:not(:placeholder-shown) ~ label {
+      top: -0.55rem; font-size: 0.58rem; color: var(--gold);
+    }
+    .form-field input::placeholder,
+    .form-field textarea::placeholder { color: transparent; }
+
+    /* Send buttons row */
+    .send-btns {
+      display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.6rem;
+    }
+
+    .btn-send {
+      flex: 1; min-width: 150px;
+      padding: 1rem 1.5rem;
+      border: none; font-family: 'Jost', sans-serif;
+      font-size: 0.72rem; font-weight: 400;
+      letter-spacing: 0.28em; text-transform: uppercase;
+      cursor: none; position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center; gap: 0.65rem;
+      transition: color 0.4s;
+    }
+    .btn-send::before {
+      content: ''; position: absolute; inset: 0;
+      transform: translateX(-101%);
+      transition: transform 0.55s cubic-bezier(.23,1,.32,1);
+    }
+    .btn-send:hover::before { transform: translateX(0); }
+    .btn-send span { position: relative; }
+    .btn-send svg { width: 16px; height: 16px; fill: currentColor; position: relative; flex-shrink: 0; }
+
+    .btn-ig {
+      background: var(--brown-dark); color: var(--gold-light);
+    }
+    .btn-ig::before { background: var(--gold); }
+    .btn-ig:hover { color: var(--brown-dark); }
+
+    .btn-wa {
+      background: transparent; color: var(--brown);
+      border: 1px solid var(--gold-light);
+    }
+    .btn-wa::before { background: var(--brown-dark); }
+    .btn-wa:hover { color: var(--gold-light); border-color: var(--brown-dark); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 2.8rem 5rem;
+      border-top: 1px solid var(--gold-light);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem; font-weight: 300;
+      letter-spacing: 0.32em; color: var(--brown-dark); text-transform: uppercase;
+    }
+    .footer-copy { font-size: 0.62rem; letter-spacing: 0.14em; color: var(--text-soft); }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0; transform: translateY(32px);
+      transition: opacity 0.95s cubic-bezier(.23,1,.32,1), transform 0.95s cubic-bezier(.23,1,.32,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-left {
+      opacity: 0; transform: translateX(-44px);
+      transition: opacity 0.95s cubic-bezier(.23,1,.32,1), transform 0.95s cubic-bezier(.23,1,.32,1);
+    }
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+    .reveal-right {
+      opacity: 0; transform: translateX(44px);
+      transition: opacity 0.95s cubic-bezier(.23,1,.32,1), transform 0.95s cubic-bezier(.23,1,.32,1);
+    }
+    .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+    .d1 { transition-delay: 0.08s; }
+    .d2 { transition-delay: 0.18s; }
+    .d3 { transition-delay: 0.3s; }
+    .d4 { transition-delay: 0.44s; }
+    .d5 { transition-delay: 0.6s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1050px) {
+      nav { padding: 1.3rem 2.5rem; }
+      .hero { grid-template-columns: 1fr; padding: 9rem 2.5rem 4rem; }
+      .hero-right { height: 55vw; max-height: 520px; }
+      .hero-img-wrap { max-width: 100%; height: 100%; }
+      .frames-section { grid-template-columns: 1fr; padding: 4rem 2.5rem; }
+      .frame-btn { aspect-ratio: 16/9; max-height: 340px; }
+      .about-hero { grid-template-columns: 1fr; }
+      .about-img-col { height: 58vw; max-height: 430px; }
+      .about-text-col { padding: 3rem 2.5rem; }
+      .showcase-grid { columns: 2; }
+      #showcase { padding: 6rem 2.5rem 4rem; }
+      .contact-inner { grid-template-columns: 1fr; gap: 3.5rem; }
+      #contact { padding: 6rem 2.5rem 4rem; }
+      footer { padding: 2rem 2.5rem; flex-direction: column; gap: 0.8rem; text-align: center; }
+    }
+    @media (max-width: 600px) {
+      .showcase-grid { columns: 1; }
+      .nav-links { gap: 1.3rem; }
+      .hero-tagline { font-size: clamp(2.8rem, 10vw, 4.5rem); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursor-ring"></div>
+  <canvas id="water-canvas"></canvas>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <a class="nav-logo" href="#" onclick="showPage('home');return false;">Lumora Estudio</a>
+    <ul class="nav-links">
+      <li><a href="#" onclick="showPage('home');return false;">Inicio</a></li>
+      <li><a href="#" onclick="showPage('about');return false;">Nosotros</a></li>
+      <li><a href="#" onclick="showPage('showcase');return false;">Galería</a></li>
+      <li><a href="#" onclick="showPage('contact');return false;">Contacto</a></li>
+    </ul>
+  </nav>
+
+  <!-- ═══ HOME ═══ -->
+  <div id="home" class="page active">
+    <section class="hero">
+
+      <div class="hero-left">
+        <div class="quote-block">
+          <span class="quote-open reveal d1">&ldquo;</span>
+          <h1 class="hero-tagline reveal d2">Cuando el arte<br/>conoce la cámara</h1>
+          <div class="quote-close-row reveal d2">
+            <span class="quote-close">&rdquo;</span>
+          </div>
+        </div>
+        <div class="hero-divider reveal d3"></div>
+        <p class="hero-sub reveal d3">Fotografía &middot; Arte &middot; Visión</p>
+      </div>
+
+      <div class="hero-right reveal-right d2">
+        <div class="hero-img-wrap" id="hero-parallax">
+          <img src="homeright1.png" alt="Lumora Estudio" />
+        </div>
+      </div>
+
+    </section>
+
+    <div class="scroll-hint">
+      <span>Explorar</span>
+      <div class="scroll-line"></div>
+    </div>
+
+    <section class="frames-section">
+      <div class="frame-btn reveal d1" onclick="showPage('about')">
+        <img src="AUI.png" alt="Nosotros" />
+        <div class="frame-label">
+          <span>Nosotros</span>
+          <span class="frame-sub">Conoce nuestra historia</span>
+        </div>
+      </div>
+      <div class="frame-btn reveal d2" onclick="showPage('showcase')">
+        <img src="SI.png" alt="Galería" />
+        <div class="frame-label">
+          <span>Galería</span>
+          <span class="frame-sub">Nuestro trabajo</span>
+        </div>
+      </div>
+      <div class="frame-btn reveal d3" onclick="showPage('contact')">
+        <img src="CUI.png" alt="Contacto" />
+        <div class="frame-label">
+          <span>Contacto</span>
+          <span class="frame-sub">Hablemos</span>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span class="footer-logo">Lumora Estudio</span>
+      <span class="footer-copy">© 2025 Lumora Estudio &middot; Todos los derechos reservados</span>
+    </footer>
+  </div>
+
+  <!-- ═══ ABOUT ═══ -->
+  <div id="about" class="page">
+    <section class="about-hero">
+      <div class="about-img-col reveal-left">
+        <img src="AUIM.png" alt="Diana Yvonne" id="about-parallax" />
+        <div class="about-img-overlay"></div>
+      </div>
+      <div class="about-text-col">
+        <p class="about-eyebrow reveal d1">Lumora Estudio</p>
+        <h2 class="about-title reveal d2">Fotógrafa Principal</h2>
+        <a href="https://www.instagram.com/diana_yvonne/" target="_blank" class="about-name-link reveal d2">Diana Yvonne</a>
+        <div class="about-divider reveal d3"></div>
+        <p class="about-bio reveal d3">
+          Diana Yvonne es una artista visual con una mirada que transforma lo cotidiano en poesía. Su trabajo nace de la sensibilidad y de una búsqueda constante por la belleza auténtica en cada instante. Con años de experiencia capturando emociones, ha construido un estilo único que fusiona el arte contemporáneo con la narrativa visual, creando imágenes que perduran en la memoria y el alma.
+          <br/><br/>
+          Cada proyecto es una experiencia diseñada con intención, donde la luz, el color y el movimiento convergen para contar historias que van mucho más allá de la imagen.
+        </p>
+        <div class="services-grid reveal d4">
+          <span class="service-tag">Fotografía</span>
+          <span class="service-tag">Video</span>
+          <span class="service-tag">Producción</span>
+          <span class="service-tag">Creación de Contenido</span>
+          <span class="service-tag">Marketing Digital</span>
+        </div>
+        <div class="contact-social reveal d5">
+          <a href="https://www.instagram.com/diana_yvonne/" target="_blank" class="ig-link">
+            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            @diana_yvonne
+          </a>
+          <a href="https://www.instagram.com/lumoraestudio/" target="_blank" class="ig-link">
+            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            @lumoraestudio
+          </a>
+        </div>
+      </div>
+    </section>
+    <footer>
+      <span class="footer-logo">Lumora Estudio</span>
+      <span class="footer-copy">© 2025 Lumora Estudio &middot; Todos los derechos reservados</span>
+    </footer>
+  </div>
+
+  <!-- ═══ SHOWCASE ═══ -->
+  <div id="showcase" class="page">
+    <div class="showcase-header reveal">
+      <h2>Nuestra Galería</h2>
+      <p>Cada imagen cuenta una historia</p>
+    </div>
+    <div class="showcase-grid" id="showcase-grid"></div>
+    <footer>
+      <span class="footer-logo">Lumora Estudio</span>
+      <span class="footer-copy">© 2025 Lumora Estudio &middot; Todos los derechos reservados</span>
+    </footer>
+  </div>
+
+  <!-- ═══ CONTACT ═══ -->
+  <div id="contact" class="page">
+    <div class="contact-inner">
+
+      <div class="contact-left">
+        <h2 class="reveal">Hablemos<br/><em>sobre tu proyecto</em></h2>
+        <div class="contact-decor reveal d1"></div>
+        <p class="reveal d2">Cada historia merece ser contada con arte. Cuéntanos tu visión y juntos crearemos algo extraordinario.</p>
+        <div class="contact-social reveal d3">
+          <a href="https://www.instagram.com/lumoraestudio/" target="_blank" class="ig-link">
+            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            @lumoraestudio
+          </a>
+          <a href="https://www.instagram.com/diana_yvonne/" target="_blank" class="ig-link">
+            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            @diana_yvonne
+          </a>
+        </div>
+      </div>
+
+      <div class="contact-form reveal-right d2">
+        <div class="form-field">
+          <input type="text" id="cf-name" placeholder="x" />
+          <label for="cf-name">Nombre</label>
+        </div>
+        <div class="form-field">
+          <input type="tel" id="cf-phone" placeholder="x" />
+          <label for="cf-phone">Teléfono</label>
+        </div>
+        <div class="form-field">
+          <textarea id="cf-message" rows="5" placeholder="x"></textarea>
+          <label for="cf-message">Mensaje</label>
+        </div>
+
+        <div class="send-btns">
+          <!-- Instagram button -->
+          <button class="btn-send btn-ig" onclick="sendInstagram()">
+            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            <span>Instagram</span>
+          </button>
+          <!-- WhatsApp button -->
+          <button class="btn-send btn-wa" onclick="sendWhatsApp()">
+            <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            <span>WhatsApp</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+    <footer>
+      <span class="footer-logo">Lumora Estudio</span>
+      <span class="footer-copy">© 2025 Lumora Estudio &middot; Todos los derechos reservados</span>
+    </footer>
+  </div>
+
+  <script>
+  /* ══════════════════════════════════════════
+     CONFIGURATION — edit this number when ready
+  ══════════════════════════════════════════ */
+  const WHATSAPP_NUMBER = '521XXXXXXXXXX'; // e.g. '5218112345678' (country code + number, no + or spaces)
+
+  /* ── CURSOR ── */
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursor-ring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; });
+  (function animCursor(){
+    cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+    rx+=(mx-rx)*0.11; ry+=(my-ry)*0.11;
+    ring.style.left=rx+'px'; ring.style.top=ry+'px';
+    requestAnimationFrame(animCursor);
+  })();
+
+  /* ── NAV SCROLL ── */
+  window.addEventListener('scroll',()=>{
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY>40);
+  });
+
+  /* ── PAGE SWITCH ── */
+  function showPage(id){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+    setTimeout(initReveal,80);
+    if(id==='showcase') buildShowcase();
+  }
+
+  /* ── SCROLL REVEAL ── */
+  function initReveal(){
+    const obs = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); }});
+    },{threshold:0.1});
+    document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el=>obs.observe(el));
+  }
+  initReveal();
+
+  /* ── WATER CANVAS ── */
+  const canvas=document.getElementById('water-canvas');
+  const ctx=canvas.getContext('2d');
+  let W,H;
+  function resizeCanvas(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+  resizeCanvas(); window.addEventListener('resize',resizeCanvas);
+
+  const waves=[
+    {y:0.28,amp:32,freq:0.007,speed:0.003,phase:0,    color:'rgba(201,169,110,0.08)'},
+    {y:0.52,amp:22,freq:0.011,speed:0.005,phase:1.6,  color:'rgba(158,114,72,0.055)'},
+    {y:0.72,amp:40,freq:0.006,speed:0.002,phase:3.1,  color:'rgba(201,169,110,0.065)'},
+  ];
+  let mInf={x:0,y:0,s:0};
+  document.addEventListener('mousemove',e=>{mInf.x=e.clientX;mInf.y=e.clientY;mInf.s=1;});
+  (function drawWaves(){
+    ctx.clearRect(0,0,W,H);
+    mInf.s*=0.97;
+    waves.forEach(w=>{
+      w.phase+=w.speed;
+      ctx.beginPath(); ctx.moveTo(0,H);
+      for(let x=0;x<=W;x+=4){
+        const d=x-mInf.x;
+        const bump=Math.exp(-d*d/(W*W*0.12))*mInf.s*22;
+        ctx.lineTo(x, w.y*H + Math.sin(x*w.freq+w.phase)*w.amp + bump);
+      }
+      ctx.lineTo(W,H); ctx.closePath();
+      ctx.fillStyle=w.color; ctx.fill();
+    });
+    requestAnimationFrame(drawWaves);
+  })();
+
+  /* ── HERO PARALLAX ── */
+  document.addEventListener('mousemove',e=>{
+    const el=document.getElementById('hero-parallax');
+    if(!el) return;
+    const dx=(e.clientX/window.innerWidth-0.5)*20;
+    const dy=(e.clientY/window.innerHeight-0.5)*14;
+    el.style.transform=`translate(${dx}px,${dy}px)`;
+  });
+
+  /* ── ABOUT PARALLAX ── */
+  document.addEventListener('mousemove',e=>{
+    const el=document.getElementById('about-parallax');
+    if(!el) return;
+    const dx=(e.clientX/window.innerWidth-0.5)*12;
+    const dy=(e.clientY/window.innerHeight-0.5)*9;
+    el.style.transform=`scale(1.06) translate(${dx}px,${dy}px)`;
+  });
+
+  /* ── SHOWCASE WATER PARALLAX ── */
+  document.addEventListener('mousemove',e=>{
+    document.querySelectorAll('.showcase-item').forEach(item=>{
+      const r=item.getBoundingClientRect();
+      const cx=r.left+r.width/2, cy=r.top+r.height/2;
+      const dx=(e.clientX-cx)/window.innerWidth*12;
+      const dy=(e.clientY-cy)/window.innerHeight*9;
+      item.style.transform=`translate(${dx}px,${dy}px)`;
+    });
+  });
+
+  /* ── BUILD SHOWCASE ── */
+  function buildShowcase(){
+    const grid=document.getElementById('showcase-grid');
+    if(grid.children.length>0) return;
+    for(let i=1;i<=30;i++){
+      const wrap=document.createElement('div');
+      wrap.className='showcase-item reveal';
+      wrap.style.transitionDelay=(i*0.035)+'s';
+      const img=document.createElement('img');
+      img.src=i+'.png'; img.alt='Lumora Estudio · '+i; img.loading='lazy';
+      img.onerror=()=>wrap.remove();
+      const ov=document.createElement('div');
+      ov.className='showcase-item-overlay';
+      wrap.append(img,ov); grid.appendChild(wrap);
+    }
+    setTimeout(initReveal,100);
+  }
+
+  /* ── FORM HELPERS ── */
+  function getFormText(){
+    const name = document.getElementById('cf-name').value.trim();
+    const phone = document.getElementById('cf-phone').value.trim();
+    const msg  = document.getElementById('cf-message').value.trim();
+    if(!name && !msg){
+      alert('Por favor escribe tu nombre y mensaje.');
+      return null;
+    }
+    return `Hola Lumora Estudio! 👋\n\nNombre: ${name||'—'}\nTeléfono: ${phone||'—'}\n\nMensaje: ${msg||'—'}`;
+  }
+
+  function sendInstagram(){
+    const text=getFormText();
+    if(!text) return;
+    // Instagram DM — copies text to clipboard then opens DM
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(text).then(()=>{
+        alert('✅ Mensaje copiado al portapapeles.\nSe abrirá el chat de Instagram — solo pégalo y envíalo.');
+        window.open('https://ig.me/m/lumoraestudio','_blank');
+      }).catch(()=>{
+        window.open('https://ig.me/m/lumoraestudio','_blank');
+      });
+    } else {
+      window.open('https://ig.me/m/lumoraestudio','_blank');
+    }
+  }
+
+  function sendWhatsApp(){
+    const text=getFormText();
+    if(!text) return;
+    const encoded=encodeURIComponent(text);
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`,'_blank');
+  }
+  </script>
+</body>
+</html>
